@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #todo-app {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+
+    #task-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .task {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+
+    .task input[type="checkbox"] {
+      margin-right: 10px;
+    }
+  </style>
+  <title>Simple To-Do List</title>
+</head>
+<body>
+  <div id="todo-app">
+    <h1>To-Do List</h1>
+    <input type="text" id="task-input" placeholder="Add a new task">
+    <ul id="task-list"></ul>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const taskInput = document.getElementById("task-input");
+      const taskList = document.getElementById("task-list");
+
+      taskInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && taskInput.value.trim() !== "") {
+          addTask(taskInput.value.trim());
+          taskInput.value = "";
+        }
+      });
+
+      function addTask(taskText) {
+        const taskItem = document.createElement("li");
+        taskItem.className = "task";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.addEventListener("change", function () {
+          taskItem.classList.toggle("completed", checkbox.checked);
+        });
+
+        const taskTextElement = document.createElement("span");
+        taskTextElement.textContent = taskText;
+
+        const removeButton = document.createElement("button");
+        removeButton.textContent = "Remove";
+        removeButton.addEventListener("click", function () {
+          taskItem.remove();
+        });
+
+        taskItem.appendChild(checkbox);
+        taskItem.appendChild(taskTextElement);
+        taskItem.appendChild(removeButton);
+
+        taskList.appendChild(taskItem);
+      }
+    });
+  </script>
+</body>
+</html>
