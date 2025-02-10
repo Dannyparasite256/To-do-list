@@ -5,7 +5,7 @@
   <!-- Include jsPDF for PDF export of the recent multipliers -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aviator Game Simulation</title>
+  <title>Aviator</title>
   <style>
     /* Global Styles */
     html, body {
@@ -580,7 +580,7 @@
 
     // Countdown function.
     function startCountdown() {
-      roundCountdownTime = 10;
+      roundCountdownTime = 4;
       countdownTimerDisplay.textContent = roundCountdownTime;
       roundCountdownInterval = setInterval(() => {
         roundCountdownTime--;
