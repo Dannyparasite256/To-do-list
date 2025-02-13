@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aviator Game Simulation</title>
+  <title>Aviator Game Simulation with Admin Panel</title>
   <link href="https://fonts.cdnfonts.com/css/binance-sans" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
@@ -23,7 +23,7 @@
       font-family: 'Binance Sans', sans-serif;
       background: var(--bg-color); color: var(--text-color);
     }
-    /* Login Form Styles */
+    /* User Login & Game Container (from previous code) */
     #login-container {
       width: 90%; max-width: 480px;
       margin: 50px auto;
@@ -52,13 +52,8 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-    #login-container button:hover {
-      background: var(--hover-color);
-    }
-    /* Game Container (Same as before) */
-    #game-container {
-      display: none;
-    }
+    #login-container button:hover { background: var(--hover-color); }
+    #game-container { display: none; }
     .container {
       width: 90%; max-width: 480px;
       margin: 20px auto; padding: 20px;
@@ -175,15 +170,43 @@
       .balance-text { font-size: 16px; }
       button { font-size: 14px; padding: 8px 12px; }
     }
-    .hidden {
-      display: none !important;
+    /* Admin Panel Styles */
+    #admin-container {
+      width: 90%; max-width: 480px;
+      margin: 40px auto;
+      background: var(--container-bg);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--card-shadow);
+      text-align: center;
     }
+    #admin-container input {
+      width: 80%;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: var(--border-radius);
+      border: none;
+      text-align: center;
+      font-size: 16px;
+    }
+    #admin-container button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--border-radius);
+      background: var(--accent-color);
+      color: var(--text-color);
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 10px;
+    }
+    #admin-container button:hover { background: var(--hover-color); }
   </style>
 </head>
 <body>
-  <!-- Login Container -->
+  <!-- User Login -->
   <div id="login-container">
-    <h2>Login</h2>
+    <h2>User Login</h2>
     <form id="login-form">
       <input type="text" id="username" placeholder="Username" required>
       <input type="text" id="phone" placeholder="Phone Number" required>
@@ -265,22 +288,38 @@
     </div>
   </div>
   
+  <!-- Admin Panel -->
+  <div id="admin-container">
+    <h2>Admin Panel</h2>
+    <!-- Admin Login -->
+    <div id="admin-login-container">
+      <form id="admin-login-form">
+        <input type="password" id="admin-password" placeholder="Enter Admin Password" required>
+        <button type="submit">Login as Admin</button>
+      </form>
+    </div>
+    <!-- Admin Settings (hidden until login) -->
+    <div id="admin-settings" style="display: none;">
+      <label for="new-deposit-password">New Deposit Password:</label>
+      <input type="text" id="new-deposit-password" placeholder="e.g. newpass123">
+      <label for="max-deposit-amount">Max Deposit Amount (UGX):</label>
+      <input type="number" id="max-deposit-amount" value="100000">
+      <button id="save-admin-settings">Save Settings</button>
+    </div>
+  </div>
+  
   <script>
-    // ----- User Login & Persistence -----
-    let currentUser = null; // Will hold the logged-in user data
-    // Save user data to localStorage (using phone as key)
+    // ----- User Login & Persistence (from previous example) -----
+    let currentUser = null;
     function saveUser() {
       if (currentUser && currentUser.phone) {
         localStorage.setItem("user_" + currentUser.phone, JSON.stringify(currentUser));
       }
     }
-    // Load user data from localStorage
     function loadUser(phone) {
       let data = localStorage.getItem("user_" + phone);
       return data ? JSON.parse(data) : null;
     }
-    
-    // Handle login form submission
     document.getElementById("login-form").addEventListener("submit", function(e) {
       e.preventDefault();
       const username = document.getElementById("username").value.trim();
@@ -291,21 +330,52 @@
       }
       let user = loadUser(phone);
       if (!user) {
-        // New user – assign a default balance of UGX 100,000
         user = { username, phone, balance: 100000 };
         localStorage.setItem("user_" + phone, JSON.stringify(user));
       }
       currentUser = user;
-      // Set the global balance to the user's saved balance
       balance = currentUser.balance;
       balanceDisplay.textContent = formatCurrency(balance);
-      // Hide login form and show the game
       document.getElementById("login-container").style.display = "none";
       document.getElementById("game-container").style.display = "block";
     });
     
+    // ----- Admin Panel Variables & Logic -----
+    // Global variables for deposit settings
+    let depositPassword = "1234";  // default deposit password
+    let maxDepositAmount = 100000;   // default maximum deposit allowed
+    // Default admin password for accessing the admin panel
+    const adminAccessPassword = "admin123";
+    
+    // Handle admin login form submission
+    document.getElementById("admin-login-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const enteredAdminPassword = document.getElementById("admin-password").value.trim();
+      if (enteredAdminPassword === adminAccessPassword) {
+        document.getElementById("admin-login-container").style.display = "none";
+        document.getElementById("admin-settings").style.display = "block";
+      } else {
+        alert("Incorrect admin password!");
+      }
+    });
+    
+    // Handle admin settings save
+    document.getElementById("save-admin-settings").addEventListener("click", function() {
+      const newDepositPass = document.getElementById("new-deposit-password").value.trim();
+      const newMaxDeposit = parseFloat(document.getElementById("max-deposit-amount").value);
+      if (newDepositPass === "" || isNaN(newMaxDeposit) || newMaxDeposit <= 0) {
+        alert("Please enter a valid deposit password and maximum deposit amount.");
+        return;
+      }
+      depositPassword = newDepositPass;
+      maxDepositAmount = newMaxDeposit;
+      alert("Admin settings updated successfully!");
+      // Clear the input fields
+      document.getElementById("new-deposit-password").value = "";
+    });
+    
     // ----- Game & Simulation Code -----
-    let balance = 100000; // This will be overwritten upon login.
+    let balance = 100000; // will be overwritten upon user login
     let multiplier = 1.0;
     let simulationInterval;
     let roundCountdownInterval;
@@ -551,24 +621,28 @@
       }
     });
     
+    // Updated deposit listener using the depositPassword and maxDepositAmount variables.
     depositBtn.addEventListener('click', () => {
-      const enteredPassword = prompt("Enter your password to deposit money:");
-      const requiredPassword = "1234";
-      if (enteredPassword !== requiredPassword) {
-        alert("Incorrect password! Deposit canceled.");
+      const enteredDepPass = prompt("Enter deposit password:");
+      if (enteredDepPass !== depositPassword) {
+        alert("Incorrect deposit password! Deposit canceled.");
         return;
       }
       const depositAmount = prompt("Enter deposit amount (UGX):");
       const amount = parseFloat(depositAmount);
-      if (!isNaN(amount) && amount > 0) {
-        balance += amount;
-        balanceDisplay.textContent = formatCurrency(balance);
-        currentUser.balance = balance;
-        saveUser();
-        alert(`Deposit of UGX ${amount.toFixed(2)} successful!`);
-      } else { 
-        alert("Invalid deposit amount!"); 
+      if (isNaN(amount) || amount <= 0) {
+        alert("Invalid deposit amount!");
+        return;
       }
+      if (amount > maxDepositAmount) {
+        alert("Deposit amount exceeds the maximum allowed of UGX " + formatCurrency(maxDepositAmount));
+        return;
+      }
+      balance += amount;
+      balanceDisplay.textContent = formatCurrency(balance);
+      currentUser.balance = balance;
+      saveUser();
+      alert(`Deposit of UGX ${amount.toFixed(2)} successful!`);
     });
     
     withdrawBtn.addEventListener('click', () => {
@@ -606,7 +680,7 @@
       doc.save("recent_multipliers.pdf");
     });
     
-    // Start the countdown for the first round once logged in.
+    // Start the first countdown once logged in.
     startCountdown();
     
   </script>
