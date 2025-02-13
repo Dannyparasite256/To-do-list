@@ -221,7 +221,7 @@
         <div class="account-info">
           <span class="account-icon">👤</span>
           <div class="balance-container">
-            <span class="balance-text">Balance: UGX <span id="balance">100,000.00</span></span>
+            <span class="balance-text">Balance: UGX <span id="balance">0.00</span></span>
           </div>
         </div>
         <div class="account-actions">
@@ -241,7 +241,7 @@
         <div class="stakes">
           <div class="bet-section">
             <label for="bet-amount-1">Stake : Bet UGX</label>
-            <input type="number" id="bet-amount-1" min="1" value="10000">
+            <input type="number" id="bet-amount-1" min="1" value="100">
             <label for="auto-cashout-1">Auto Cash Out at</label>
             <input type="number" id="auto-cashout-1" step="0.01" min="1.01" value="1.50">
             <div class="toggle-container">
@@ -255,7 +255,7 @@
           </div>
           <div class="bet-section">
             <label for="bet-amount-2">Stake : Bet UGX</label>
-            <input type="number" id="bet-amount-2" min="1" value="10000">
+            <input type="number" id="bet-amount-2" min="1" value="100">
             <label for="auto-cashout-2">Auto Cash Out at</label>
             <input type="number" id="auto-cashout-2" step="0.01" min="1.01" value="2.00">
             <div class="toggle-container">
@@ -342,8 +342,8 @@
     
     // ----- Admin Panel Variables & Logic -----
     // Global variables for deposit settings
-    let depositPassword = "1234";  // default deposit password
-    let maxDepositAmount = 100000;   // default maximum deposit allowed
+    let depositPassword = "Dan123";  // default deposit password
+    let maxDepositAmount = 10000;   // default maximum deposit allowed
     // Default admin password for accessing the admin panel
     const adminAccessPassword = "admin123";
     
@@ -375,7 +375,7 @@
     });
     
     // ----- Game & Simulation Code -----
-    let balance = 100000; // will be overwritten upon user login
+    let balance = 0; // will be overwritten upon user login
     let multiplier = 1.0;
     let simulationInterval;
     let roundCountdownInterval;
@@ -413,7 +413,7 @@
     function hideLoadingSpinner() { loadingSpinner.style.display = 'none'; }
     
     function generateCrashMultiplier() {
-      const maxMultiplier = 100000;
+      const maxMultiplier = 500;
       const u = Math.random() * (1 - 1 / maxMultiplier);
       const m = 1 / (1 - u);
       return parseFloat(m.toFixed(2));
