@@ -330,7 +330,7 @@
       }
       let user = loadUser(phone);
       if (!user) {
-        user = { username, phone, balance: 100000 };
+        user = { username, phone, balance: 0 };
         localStorage.setItem("user_" + phone, JSON.stringify(user));
       }
       currentUser = user;
@@ -652,8 +652,8 @@
         alert("Invalid withdrawal amount!");
         return;
       }
-      if (amount < 20000) {
-        alert("The minimum withdrawal amount is UGX 20,000!");
+      if (amount < 1000) {
+        alert("The minimum withdrawal amount is UGX 1,000!");
         return;
       }
       if (amount > balance) {
