@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crypto Portfolio</title>
+  <title>Crypto Portfolio - Login</title>
   <style>
     /* Import Binance PLEX font (optional) */
     @import url(https://db.onlinewebfonts.com/c/d05c19ccecf7003d248c60ffd6b5e8f7?family=Binance+PLEX);
@@ -20,6 +20,52 @@
       font-family: "Binance PLEX", sans-serif;
       color: rgba(255, 255, 255, 0.85);
       line-height: 1.5;
+    }
+
+    /* Shared styling for forms and modals */
+    .container {
+      padding: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+
+    /* Login Page */
+    #loginPage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #loginPage h1 {
+      margin-bottom: 20px;
+    }
+    #loginPage input {
+      width: 80%;
+      max-width: 300px;
+      padding: 10px;
+      margin: 5px 0;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+    #loginPage button {
+      width: 80%;
+      max-width: 300px;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: var(--primary-action-color);
+      color: #212121;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    /* Portfolio Page */
+    #portfolioPage {
+      display: none;
     }
 
     /* Top Tab Bar */
@@ -67,8 +113,6 @@
       margin: 5px 0 0;
       color: rgba(204, 204, 204, 0.7);
     }
-
-    /* Currency Dropdown */
     .currency-select {
       position: absolute;
       top: 15px;
@@ -149,9 +193,6 @@
       align-items: center;
       padding: 12px 0;
       border-bottom: 1px solid #222;
-    }
-    .crypto-list li:last-child {
-      border-bottom: none;
     }
     .crypto-name {
       display: flex;
@@ -234,21 +275,18 @@
       opacity: 0.9;
     }
 
-    /* Overlays & Modals */
+    /* Overlays & Modals (for deposit) */
     #overlay, #overlay-deposit {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background-color: rgba(0, 0, 0, 0.5);
       z-index: 999;
       display: none;
     }
     .modal {
       position: fixed;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       background-color: #1e1e1e;
       padding: 20px;
@@ -290,166 +328,208 @@
   </style>
 </head>
 <body>
-
-  <!-- Top Tabs -->
-  <div class="nav-tabs">
-    <button>Overview</button>
-    <button class="active">Spot</button>
-    <button>Funding</button>
-    <button>Futures</button>
+  <!-- Login Page -->
+  <div id="loginPage" class="container">
+    <h1>Login</h1>
+    <input type="text" id="usernameInput" placeholder="Username" />
+    <input type="password" id="loginPasswordInput" placeholder="Password" />
+    <button onclick="login()">Login</button>
   </div>
 
-  <!-- Value Section -->
-  <div class="value-section">
-    <h2>Est. Total Value</h2>
-    <h1 id="totalValue"></h1>
-    <p>Today's PNL <span class="text-red convert-ugx" data-ugx="-34.40">-USh34.40</span>(-4.36%)</p>
-    <!-- Currency Dropdown -->
-    <div class="currency-select">
-      <select id="currencySelect">
-        <option value="UGX" selected>UGX</option>
-        <option value="USD">USD</option>
-        <option value="EUR">EUR</option>
+  <!-- Portfolio Page -->
+  <div id="portfolioPage" class="container">
+    <!-- Top Tabs & Logout -->
+    <div class="nav-tabs">
+      <button>Overview</button>
+      <button class="active">Spot</button>
+      <button>Funding</button>
+      <button>Futures</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Value Section -->
+    <div class="value-section">
+      <h2>Est. Total Value</h2>
+      <h1 id="totalValue"></h1>
+      <p>Today's PNL <span class="text-red convert-ugx" data-ugx="-34.40">-USh34.40</span>(-4.36%)</p>
+      <!-- Currency Dropdown -->
+      <div class="currency-select">
+        <select id="currencySelect">
+          <option value="UGX" selected>UGX</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button id="addFundsBtn" onclick="handleAddFunds()">Add Funds</button>
+      <button>Send</button>
+      <button>Transfer</button>
+    </div>
+
+    <!-- Crypto / Account Tabs -->
+    <div class="crypto-account-tabs">
+      <button class="active">Crypto</button>
+      <button>Account</button>
+    </div>
+
+    <!-- Crypto List -->
+    <div class="crypto-section">
+      <ul class="crypto-list">
+        <!-- TRUMP Item -->
+        <li data-crypto="TRUMP">
+          <div class="crypto-details">
+            <div class="crypto-name">
+              <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/26973.png" alt="TRUMP">
+              <span>TRUMP</span>
+            </div>
+            <div class="crypto-ticker">OFFICIAL TRUMP</div>
+            <p>Today's PNL <span class="amount convert-ugx text-red" data-ugx="-36.75">-USh36.75</span>(-4.36%)</p>
+            <p>Average cost <span class="amount convert-ugx" data-ugx="55643.03">USh55,643.03</span></p>
+            <p>Market Price <span class="amount convert-ugx market-price" data-ugx="45168.58">USh45,168.58</span></p>
+          </div>
+          <div class="crypto-value">
+            <p class="coin-quantity" data-coin="0.01669361">0.01669361</p>
+            <p class="amount convert-ugx" data-ugx="752.80">USh752.80</p>
+          </div>
+        </li>
+        <!-- XRP Item -->
+        <li data-crypto="XRP">
+          <div class="crypto-details">
+            <div class="crypto-name">
+              <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/52.png" alt="XRP">
+              <span>XRP</span>
+            </div>
+            <div class="crypto-ticker">XRP</div>
+            <p>Today's PNL <span class="amount convert-ugx text-green" data-ugx="0.00">+USh0.00</span>(-1.69%)</p>
+            <p>Average cost <span class="amount convert-ugx" data-ugx="1984.99">USh1,984.99</span></p>
+            <p>Market Price <span class="amount convert-ugx market-price" data-ugx="8623.93">USh8,623.93</span></p>
+          </div>
+          <div class="crypto-value">
+            <p class="coin-quantity" data-coin="0.00018207">0.00018207</p>
+            <p class="amount convert-ugx" data-ugx="1.57">USh1.57</p>
+          </div>
+        </li>
+        <!-- BNB (GPS) Item -->
+        <li data-crypto="BNB">
+          <div class="crypto-details">
+            <div class="crypto-name">
+              <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1899.png" alt="GPS">
+              <span>GPS</span>
+            </div>
+            <div class="crypto-ticker">GPS</div>
+            <p>Today's PNL <span class="amount convert-ugx text-green" data-ugx="0.00">+USh0.00</span>(-1.54%)</p>
+            <p>Average cost <span class="amount convert-ugx" data-ugx="382.78">USh382.78</span></p>
+            <p>Market Price <span class="amount convert-ugx market-price" data-ugx="382.78">USh382.67</span></p>
+          </div>
+          <div class="crypto-value">
+            <p class="coin-quantity" data-coin="0.00000034">0.00000034</p>
+            <p class="amount convert-ugx" data-ugx="0.70836383">USh0.70836383</p>
+          </div>
+        </li>
+        <!-- USDT Item -->
+        <li data-crypto="USDT">
+          <div class="crypto-details">
+            <div class="crypto-name">
+              <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png" alt="USDT">
+              <span>USDT</span>
+            </div>
+            <div class="crypto-ticker">TetherUS</div>
+            <p>Today's PNL <span class="amount convert-ugx text-green" data-ugx="0.00">+USh0.00</span>(0.00%)</p>
+            <p>Market Price <span class="amount convert-ugx market-price" data-ugx="3675.23">USh3,675.23</span></p>
+          </div>
+          <div class="crypto-value">
+            <p class="coin-quantity" data-coin="0.00000074">0.00000074</p>
+            <p class="amount convert-ugx" data-ugx="0.00271967">USh0.00271967</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <a href="#" class="active">
+        <img src="https://img.icons8.com/material-outlined/24/FFFFFF/home--v2.png" alt="Home"/>
+        Home
+      </a>
+      <a href="#">
+        <img src="https://img.icons8.com/material-outlined/24/FFFFFF/line-chart--v1.png" alt="Markets"/>
+        Markets
+      </a>
+      <a href="#">
+        <img src="https://img.icons8.com/material-outlined/24/FFFFFF/trade--v1.png" alt="Trade"/>
+        Trade
+      </a>
+      <a href="#">
+        <img src="https://img.icons8.com/material-outlined/24/FFFFFF/futures.png" alt="Futures"/>
+        Futures
+      </a>
+      <a href="#">
+        <img src="https://img.icons8.com/material-outlined/24/FFFFFF/pie-chart--v1.png" alt="Assets"/>
+        Assets
+      </a>
+    </div>
+
+    <!-- Overlays & Modals (for deposit) -->
+    <div id="overlay"></div>
+    <div id="passwordModal" class="modal">
+      <h2>Enter Password</h2>
+      <input type="password" id="passwordInput" placeholder="Password" />
+      <br />
+      <button onclick="checkPassword()">Submit</button>
+    </div>
+    <div id="overlay-deposit"></div>
+    <div id="depositModal" class="modal">
+      <h2>Deposit Funds</h2>
+      <label for="cryptoSelectDeposit">Select Crypto:</label>
+      <select id="cryptoSelectDeposit">
+        <option value="TRUMP">TRUMP</option>
+        <option value="XRP">XRP</option>
+        <option value="BNB">GPS</option>
+        <option value="USDT">USDT</option>
       </select>
+      <br />
+      <input type="number" id="depositAmountInput" placeholder="Enter amount in UGX" />
+      <br />
+      <button onclick="confirmDeposit()">Deposit</button>
     </div>
   </div>
 
-  <!-- Action Buttons -->
-  <div class="actions">
-    <button id="addFundsBtn" onclick="handleAddFunds()">Add Funds</button>
-    <button>Send</button>
-    <button>Transfer</button>
-  </div>
-
-  <!-- Crypto / Account Tabs -->
-  <div class="crypto-account-tabs">
-    <button class="active">Crypto</button>
-    <button>Account</button>
-  </div>
-
-  <!-- Crypto List -->
-  <div class="crypto-section">
-    <ul class="crypto-list">
-      <!-- TRUMP Item -->
-      <li data-crypto="TRUMP">
-        <div class="crypto-details">
-          <div class="crypto-name">
-            <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/26973.png" alt="TRUMP">
-            <span>TRUMP</span>
-          </div>
-          <div class="crypto-ticker">OFFICIAL TRUMP</div>
-          <p>Today's PNL <span class="amount convert-ugx text-red" data-ugx="-36.75">-USh36.75</span>(-4.36%)</p>
-          <p>Average cost <span class="amount convert-ugx" data-ugx="55643.03">USh55,643.03</span></p>
-          <p>Market Price <span class="amount convert-ugx market-price" data-ugx="45168.58">USh45,168.58</span></p>
-        </div>
-        <div class="crypto-value">
-          <p class="coin-quantity" data-coin="0.01669361">0.01669361</p>
-          <p class="amount convert-ugx" data-ugx="752.80">USh752.80</p>
-        </div>
-      </li>
-      <!-- XRP Item -->
-      <li data-crypto="XRP">
-        <div class="crypto-details">
-          <div class="crypto-name">
-            <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/52.png" alt="XRP">
-            <span>XRP</span>
-          </div>
-          <div class="crypto-ticker">XRP</div>
-          <p>Today's PNL <span class="amount convert-ugx text-green" data-ugx="0.00">+USh0.00</span>(-1.69%)</p>
-          <p>Average cost <span class="amount convert-ugx" data-ugx="1984.99">USh1,984.99</span></p>
-          <p>Market Price <span class="amount convert-ugx market-price" data-ugx="8623.93">USh8,623.93</span></p>
-        </div>
-        <div class="crypto-value">
-          <p class="coin-quantity" data-coin="0.00018207">0.00018207</p>
-          <p class="amount convert-ugx" data-ugx="1.57">USh1.57</p>
-        </div>
-      </li>
-      <!-- BNB (GPS) Item -->
-      <li data-crypto="BNB">
-        <div class="crypto-details">
-          <div class="crypto-name">
-            <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1899.png" alt="GoPlus Security (GPS) Logo">
-            <span>GPS</span>
-          </div>
-          <div class="crypto-ticker">GPS</div>
-          <p>Today's PNL <span class="amount convert-ugx text-green" data-ugx="0.00">+USh0.00</span>(-10.54%)</p>
-          <p>Average cost <span class="amount convert-ugx" data-ugx="299.78">USh299.78</span></p>
-          <p>Market Price <span class="amount convert-ugx market-price" data-ugx="299.78">USh299.67</span></p>
-        </div>
-        <div class="crypto-value">
-          <p class="coin-quantity" data-coin="0.00000034">0.00000034</p>
-          <p class="amount convert-ugx" data-ugx="0.70836383">USh0.70836383</p>
-        </div>
-      </li>
-      <!-- USDT Item -->
-      <li data-crypto="USDT">
-        <div class="crypto-details">
-          <div class="crypto-name">
-            <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png" alt="USDT">
-            <span>USDT</span>
-          </div>
-          <div class="crypto-ticker">TetherUS</div>
-          <p>Today's PNL <span class="amount convert-ugx text-green" data-ugx="0.00">+USh0.00</span>(0.00%)</p>
-          <p>Market Price <span class="amount convert-ugx market-price" data-ugx="3675.23">USh3,675.23</span></p>
-        </div>
-        <div class="crypto-value">
-          <p class="coin-quantity" data-coin="0.00000074">0.00000074</p>
-          <p class="amount convert-ugx" data-ugx="0.00271967">USh0.00271967</p>
-        </div>
-      </li>
-    </ul>
-  </div>
-
-  <!-- Bottom Navigation -->
-  <div class="bottom-nav">
-    <a href="#" class="active">
-      <img src="https://img.icons8.com/material-outlined/24/FFFFFF/home--v2.png" alt="Home"/>
-      Home
-    </a>
-    <a href="#">
-      <img src="https://img.icons8.com/material-outlined/24/FFFFFF/line-chart--v1.png" alt="Markets"/>
-      Markets
-    </a>
-    <a href="#">
-      <img src="https://img.icons8.com/material-outlined/24/FFFFFF/trade--v1.png" alt="Trade"/>
-      Trade
-    </a>
-    <a href="#">
-      <img src="https://img.icons8.com/material-outlined/24/FFFFFF/futures.png" alt="Futures"/>
-      Futures
-    </a>
-    <a href="#">
-      <img src="https://img.icons8.com/material-outlined/24/FFFFFF/pie-chart--v1.png" alt="Assets"/>
-      Assets
-    </a>
-  </div>
-
-  <!-- Overlays & Modals -->
-  <div id="overlay"></div>
-  <div id="passwordModal" class="modal">
-    <h2>Enter Password</h2>
-    <input type="password" id="passwordInput" placeholder="Password" />
-    <br />
-    <button onclick="checkPassword()">Submit</button>
-  </div>
-
-  <div id="overlay-deposit"></div>
-  <div id="depositModal" class="modal">
-    <h2>Deposit Funds</h2>
-    <label for="cryptoSelectDeposit">Select Crypto:</label>
-    <select id="cryptoSelectDeposit">
-      <option value="TRUMP">TRUMP</option>
-      <option value="XRP">XRP</option>
-      <option value="BNB">GPS</option>
-      <option value="USDT">USDT</option>
-    </select>
-    <br />
-    <input type="number" id="depositAmountInput" placeholder="Enter amount in UGX" />
-    <br />
-    <button onclick="confirmDeposit()">Deposit</button>
-  </div>
-
   <script>
+    // ----- LOGIN & PERSISTENCE LOGIC -----
+    function login() {
+      const username = document.getElementById('usernameInput').value;
+      const password = document.getElementById('loginPasswordInput').value;
+      // For demo: username "user" and password "12345"
+      if(username === "user" && password === "12345") {
+        localStorage.setItem("loggedIn", "true");
+        // If portfolio data exists in storage, load it
+        loadPortfolio();
+        showPortfolio();
+      } else {
+        alert("Invalid username or password!");
+      }
+    }
+    function logout() {
+      localStorage.removeItem("loggedIn");
+      // Optionally clear portfolio data
+      // localStorage.removeItem("portfolioData");
+      location.reload();
+    }
+    function showPortfolio() {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('portfolioPage').style.display = 'block';
+    }
+    // On page load, check if logged in
+    if(localStorage.getItem("loggedIn") === "true") {
+      loadPortfolio();
+      showPortfolio();
+    }
+    // ----- END LOGIN LOGIC -----
+
+    // ----- PORTFOLIO & EXCHANGE RATE LOGIC -----
     // Mapping from our crypto codes to CoinGecko IDs:
     const coinMapping = {
       "TRUMP": "bitcoin",
@@ -458,7 +538,6 @@
       "USDT": "tether"
     };
 
-    // Enable/Disable Add Funds Button:
     let addFundsEnabled = true;
     document.getElementById('addFundsBtn').disabled = !addFundsEnabled;
 
@@ -472,7 +551,6 @@
       EUR: 0.00024
     };
 
-    // Currency symbols mapping
     const currencySymbols = {
       UGX: "USh",
       USD: "$",
@@ -482,47 +560,41 @@
     const totalValueEl = document.getElementById('totalValue');
     const currencySelect = document.getElementById('currencySelect');
 
-    // Update the total value display in the chosen currency
+    // Update displayed total balance based on selected currency
     function updateDisplayedValue() {
       const selectedCurrency = currencySelect.value;
       const rate = exchangeRates[selectedCurrency] || 1;
       const symbol = currencySymbols[selectedCurrency] || '';
       totalValueEl.innerHTML = `${symbol}${(baseValueUGX * rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
-
-    // Update non-price elements for currency conversion
+    // Update non-price elements
     function updateConvertedValues() {
       const selectedCurrency = currencySelect.value;
       const rate = exchangeRates[selectedCurrency] || 1;
       const symbol = currencySymbols[selectedCurrency] || '';
       document.querySelectorAll('.convert-ugx').forEach(el => {
-        // Skip market-price elements; they are updated separately
-        if (el.classList.contains('market-price')) return;
+        if(el.classList.contains('market-price')) return;
         const baseVal = parseFloat(el.getAttribute('data-ugx'));
         if (!isNaN(baseVal)) {
           el.innerText = `${symbol}${(baseVal * rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
       });
     }
-
     currencySelect.addEventListener('change', () => {
       updateDisplayedValue();
       updateConvertedValues();
-      // Also recalc total portfolio value conversion on dropdown change
       recalcTotalValue();
     });
-
-    // Initialize display on load
     updateDisplayedValue();
     updateConvertedValues();
 
-    // --- Fetch exchange rates from a demo API ---
+    // Fetch conversion rates (using UGX as base)
     async function fetchConversionRates() {
       const url = 'https://open.er-api.com/v6/latest/UGX';
       try {
         const response = await fetch(url);
         const data = await response.json();
-        if (data && data.rates) {
+        if(data && data.rates) {
           exchangeRates.USD = data.rates.USD;
           exchangeRates.EUR = data.rates.EUR;
           updateDisplayedValue();
@@ -535,13 +607,47 @@
     fetchConversionRates();
     setInterval(fetchConversionRates, 10 * 60 * 1000);
 
-    // --- Add Funds Flow ---
+    // ----- Portfolio Persistence -----
+    // Save current portfolio state to localStorage
+    function savePortfolio() {
+      let portfolio = [];
+      document.querySelectorAll('.crypto-list li').forEach(li => {
+        const cryptoCode = li.getAttribute('data-crypto');
+        const coinQuantity = li.querySelector('.coin-quantity').getAttribute('data-coin');
+        portfolio.push({ crypto: cryptoCode, coinQuantity: coinQuantity });
+      });
+      localStorage.setItem("portfolioData", JSON.stringify(portfolio));
+      localStorage.setItem("baseValueUGX", baseValueUGX);
+    }
+    // Load portfolio state from localStorage
+    function loadPortfolio() {
+      const storedPortfolio = localStorage.getItem("portfolioData");
+      const storedTotal = localStorage.getItem("baseValueUGX");
+      if(storedPortfolio) {
+        const portfolio = JSON.parse(storedPortfolio);
+        portfolio.forEach(item => {
+          const li = document.querySelector(`.crypto-list li[data-crypto="${item.crypto}"]`);
+          if(li) {
+            const coinQuantityEl = li.querySelector('.coin-quantity');
+            coinQuantityEl.setAttribute('data-coin', item.coinQuantity);
+            coinQuantityEl.innerText = parseFloat(item.coinQuantity).toFixed(8);
+          }
+        });
+      }
+      if(storedTotal) {
+        baseValueUGX = parseFloat(storedTotal);
+      } else {
+        recalcTotalValue();
+      }
+    }
+    // ----- End Portfolio Persistence -----
+
+    // ----- Add Funds Flow -----
     function handleAddFunds() {
       if (!addFundsEnabled) return;
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('passwordModal').style.display = 'block';
     }
-
     function checkPassword() {
       const password = document.getElementById('passwordInput').value;
       if (password === '12345') {
@@ -551,18 +657,15 @@
         alert('Incorrect password!');
       }
     }
-
     function closePasswordModal() {
       document.getElementById('overlay').style.display = 'none';
       document.getElementById('passwordModal').style.display = 'none';
       document.getElementById('passwordInput').value = '';
     }
-
     function openDepositModal() {
       document.getElementById('overlay-deposit').style.display = 'block';
       document.getElementById('depositModal').style.display = 'block';
     }
-
     function confirmDeposit() {
       const amount = parseFloat(document.getElementById('depositAmountInput').value);
       if (amount && amount > 0) {
@@ -590,18 +693,19 @@
         alert(`You have deposited USh ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} into ${selectedCrypto}!`);
         closeDepositModal();
         recalcTotalValue();
+        savePortfolio();
       } else {
         alert('Please enter a valid amount.');
       }
     }
-
     function closeDepositModal() {
       document.getElementById('overlay-deposit').style.display = 'none';
       document.getElementById('depositModal').style.display = 'none';
       document.getElementById('depositAmountInput').value = '';
     }
+    // ----- End Add Funds Flow -----
 
-    // --- Recalculate total portfolio value ---
+    // Recalculate total portfolio value
     function recalcTotalValue() {
       let total = 0;
       document.querySelectorAll('.crypto-list li').forEach(li => {
@@ -624,11 +728,10 @@
       updateDisplayedValue();
     }
 
-    // --- Realtime Market Price Update using CoinGecko API ---
+    // ----- Realtime Market Price Update using CoinGecko API -----
     async function updateMarketPrices() {
       const ids = Object.values(coinMapping).join(',');
       const apiUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=ugx`;
-      
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -650,15 +753,14 @@
         });
         recalcTotalValue();
         updateConvertedValues();
+        savePortfolio();
       } catch (error) {
         console.error("Error fetching market prices:", error);
       }
     }
-
     setInterval(updateMarketPrices, 10000);
     updateMarketPrices();
-    // --- End of Realtime API Integration ---
-
+    // ----- End Market Price Update -----
   </script>
 </body>
 </html>
