@@ -2,687 +2,663 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aviator Game Simulation with Admin Panel</title>
-  <link href="https://fonts.cdnfonts.com/css/binance-sans" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crypto Portfolio</title>
   <style>
+    /* Import Binance PLEX font (optional) */
+    @import url(https://db.onlinewebfonts.com/c/d05c19ccecf7003d248c60ffd6b5e8f7?family=Binance+PLEX);
+
     :root {
-      --bg-color: #1a1a1a;
-      --container-bg: #242424;
-      --accent-color: #0080ff;
-      --hover-color: #006bb3;
-      --text-color: #fff;
-      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-      --border-radius: 12px;
+      --primary-action-color: #F9D040;
+      --secondary-bg-color:   #202630;
+      --header-bg-color:      #1E1E1E;
     }
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      font-family: 'Binance Sans', sans-serif;
-      background: var(--bg-color); color: var(--text-color);
+
+    body {
+      margin: 0;
+      background-color: var(--secondary-bg-color);
+      font-family: "Binance PLEX", sans-serif;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.5;
     }
-    /* User Login & Game Container (from previous code) */
-    #login-container {
-      width: 90%; max-width: 480px;
-      margin: 50px auto;
-      background: var(--container-bg);
-      padding: 20px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
-      text-align: center;
+
+    /* Top Tab Bar */
+    .nav-tabs {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #333;
     }
-    #login-container input {
-      width: 80%;
-      padding: 8px;
-      margin: 10px 0;
-      border-radius: var(--border-radius);
+    .nav-tabs button {
+      background: none;
       border: none;
-      text-align: center;
-      font-size: 16px;
-    }
-    #login-container button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: var(--border-radius);
-      background: var(--accent-color);
-      color: var(--text-color);
-      font-size: 16px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9em;
+      font-weight: 500;
+      padding: 8px 12px;
       cursor: pointer;
-      transition: background 0.3s;
     }
-    #login-container button:hover { background: var(--hover-color); }
-    #game-container { display: none; }
-    .container {
-      width: 90%; max-width: 480px;
-      margin: 20px auto; padding: 20px;
-      background: var(--container-bg); border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
+    .nav-tabs button.active {
+      color: var(--primary-action-color);
+      border-bottom: 2px solid var(--primary-action-color);
     }
-    .account-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px; background: #2b2b2b; border-radius: var(--border-radius);
-      margin-bottom: 15px;
+
+    /* Value Section */
+    .value-section {
+      padding: 15px;
+      border-bottom: 1px solid #333;
+      position: relative;
     }
-    .account-info { display: flex; align-items: center; gap: 10px; }
-    .account-icon { font-size: 28px; }
-    .balance-container {
-      background: #333; padding: 5px 10px; border-radius: var(--border-radius);
+    .value-section h2 {
+      font-size: 0.9em;
+      margin: 0 0 5px;
+      color: rgba(153, 153, 153, 0.7);
+      font-weight: normal;
     }
-    .balance-text { font-size: 18px; font-weight: bold; }
-    .account-actions { display: flex; gap: 10px; }
-    .account-actions button {
-      background: var(--accent-color); border: none; padding: 8px 12px;
-      border-radius: var(--border-radius); color: var(--text-color);
-      cursor: pointer; font-size: 14px; transition: background 0.3s;
+    .value-section h1 {
+      font-size: 1.6em;
+      margin: 0 0 5px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.95);
     }
-    .account-actions button:hover { background: var(--hover-color); }
-    .round-timer { text-align: center; margin-bottom: 15px; font-size: 16px; }
-    .game-area {
-      position: relative; margin: 20px auto;
-      width: 80vw; height: 80vw; max-width: 300px; max-height: 300px;
-      border: 2px solid #444; border-radius: 50%;
-      background: radial-gradient(circle, #333, #1a1a1a);
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden;
+    .value-section p {
+      font-size: 0.8em;
+      margin: 5px 0 0;
+      color: rgba(204, 204, 204, 0.7);
     }
-    .multiplier-display {
-      position: absolute; top: 40%; transform: translateY(-50%);
-      font-size: 48px; font-weight: bold; z-index: 2;
+
+    /* Currency Dropdown */
+    .currency-select {
+      position: absolute;
+      top: 15px;
+      right: 15px;
     }
-    .multiplier-display.stopped {
-      animation: multiplierStopAnimation 0.5s ease-out;
+    .currency-select select {
+      background-color: #333;
+      color: #fff;
+      border: none;
+      padding: 5px 8px;
+      font-size: 0.8em;
+      border-radius: 6px;
+      cursor: pointer;
     }
-    @keyframes multiplierStopAnimation {
-      0% { transform: scale(1); color: #fff; }
-      50% { transform: scale(1.5); color: #ff0000; }
-      100% { transform: scale(1); color: #fff; }
+
+    /* Actions */
+    .actions {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      border-bottom: 1px solid #333;
     }
-    .airplane {
-      position: absolute; bottom: 10%; left: 50%;
-      transform: translateX(-50%); font-size: 36px;
+    .actions button {
+      border: none;
+      padding: 10px 18px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-weight: 500;
+      width: 30%;
     }
-    .airplane.crashed {
-      animation: planeCrashAnimation 1s ease-out forwards;
+    .actions button:first-child {
+      background-color: var(--primary-action-color);
+      color: #212121;
     }
-    @keyframes planeCrashAnimation {
-      0% { transform: translateX(-50%) translateY(0) rotate(0deg); }
-      100% { transform: translateX(-50%) translateY(100%) rotate(90deg); opacity: 0; }
+    .actions button:nth-child(2),
+    .actions button:nth-child(3) {
+      background-color: var(--secondary-bg-color);
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid #333;
     }
-    .winnings { text-align: center; margin-top: 10px; font-size: 24px; font-weight: bold; }
-    .controls { margin-top: 20px; display: flex; flex-direction: column; gap: 15px; align-items: center; }
-    .stakes { display: flex; width: 100%; gap: 10px; justify-content: space-between; }
-    .bet-section {
-      flex: 1; background: #2b2b2b; padding: 10px; border-radius: var(--border-radius);
-      display: flex; flex-direction: column; gap: 10px; align-items: center;
+
+    /* Crypto / Account Tabs */
+    .crypto-account-tabs {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid #333;
     }
-    .bet-section label { font-size: 14px; }
-    .bet-section input {
-      width: 100%; padding: 8px; border-radius: var(--border-radius);
-      border: none; text-align: center; font-size: 16px;
+    .crypto-account-tabs button {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1em;
+      font-weight: 500;
+      margin-right: 15px;
+      cursor: pointer;
+      padding-bottom: 5px;
     }
-    .bet-buttons { display: flex; gap: 10px; width: 100%; }
-    .toggle-container { display: flex; align-items: center; gap: 5px; font-size: 14px; }
-    button {
-      background: var(--accent-color); border: none; padding: 10px 15px;
-      border-radius: var(--border-radius); color: var(--text-color);
-      font-size: 16px; cursor: pointer; transition: background 0.3s, transform 0.2s;
+    .crypto-account-tabs button.active {
+      color: rgba(255, 255, 255, 0.95);
+      border-bottom: 2px solid var(--primary-action-color);
     }
-    button:hover { background: var(--hover-color); transform: scale(1.02); }
-    button:disabled { background: #555; cursor: not-allowed; transform: none; }
-    .next-crash, .result { text-align: center; margin-top: 10px; font-size: 18px; }
-    .next-crash { display: block; }
-    .win { color: #00ff00; }
-    .loss { color: #ff4444; }
-    .virtual-players, .recent-multipliers {
-      width: 90%; max-width: 480px; background: var(--container-bg);
-      border-radius: var(--border-radius); padding: 15px;
-      box-shadow: var(--card-shadow); margin: 20px auto;
+
+    /* Crypto List Section */
+    .crypto-section {
+      padding: 0 15px;
     }
-    .virtual-players h3, .recent-multipliers h3 {
-      text-align: center; margin: 0 0 10px; font-size: 20px;
+    .crypto-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
     }
-    .virtual-players ul, .recent-multipliers ul {
-      list-style: none; padding: 0; margin: 0;
-      max-height: 200px; overflow-y: auto;
+    .crypto-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #222;
     }
-    .virtual-players li, .recent-multipliers li {
-      font-size: 16px; margin: 5px 0;
+    .crypto-list li:last-child {
+      border-bottom: none;
     }
-    #loading-spinner {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.7); padding: 20px;
-      border-radius: var(--border-radius); z-index: 1000;
+    .crypto-name {
+      display: flex;
+      align-items: center;
+      margin-bottom: 3px;
+    }
+    .crypto-name img {
+      width: 18px;
+      height: 18px;
+      margin-right: 5px;
+    }
+    .crypto-name span {
+      font-weight: bold;
+      font-size: 0.9em;
+      color: rgba(255, 255, 255, 0.95);
+    }
+    .crypto-ticker {
+      font-size: 0.75em;
+      color: rgba(153, 153, 153, 0.7);
+      margin-bottom: 3px;
+    }
+    .crypto-details p {
+      font-size: 0.75em;
+      margin: 2px 0;
+      color: rgba(204, 204, 204, 0.7);
+    }
+    .amount {
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .coin-quantity {
+      font-size: 0.9em;
+      margin: 0;
+    }
+    .crypto-value {
+      text-align: right;
+      margin-left: 10px;
+    }
+    .crypto-value p {
+      margin: 2px 0;
+      font-size: 0.8em;
+    }
+    .text-green {
+      color: rgba(76, 175, 80, 0.8);
+    }
+    .text-red {
+      color: rgba(244, 67, 54, 0.8);
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: var(--header-bg-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      z-index: 100;
+    }
+    .bottom-nav a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.7em;
+    }
+    .bottom-nav a img {
+      width: 22px;
+      height: 22px;
+      margin-bottom: 3px;
+      opacity: 0.7;
+    }
+    .bottom-nav a.active {
+      color: var(--primary-action-color);
+    }
+    .bottom-nav a.active img {
+      opacity: 0.9;
+    }
+
+    /* Overlays & Modals */
+    #overlay, #overlay-deposit {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
       display: none;
     }
-    .spinner {
-      border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-color);
-      border-radius: 50%; width: 40px; height: 40px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @media (max-width: 600px) {
-      .multiplier-display { font-size: 36px; }
-      .airplane { font-size: 28px; }
-      .winnings { font-size: 20px; }
-      .balance-text { font-size: 16px; }
-      button { font-size: 14px; padding: 8px 12px; }
-    }
-    /* Admin Panel Styles */
-    #admin-container {
-      width: 90%; max-width: 480px;
-      margin: 40px auto;
-      background: var(--container-bg);
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #1e1e1e;
       padding: 20px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
+      border-radius: 8px;
       text-align: center;
+      color: #fff;
+      width: 80%;
+      max-width: 400px;
+      z-index: 1000;
+      display: none;
     }
-    #admin-container input {
+    .modal input[type="password"],
+    .modal input[type="number"] {
       width: 80%;
       padding: 8px;
       margin: 10px 0;
-      border-radius: var(--border-radius);
       border: none;
-      text-align: center;
-      font-size: 16px;
+      border-radius: 4px;
+      font-size: 1em;
     }
-    #admin-container button {
+    .modal button {
+      background-color: var(--primary-action-color);
+      color: #212121;
+      border: none;
       padding: 10px 20px;
-      border: none;
-      border-radius: var(--border-radius);
-      background: var(--accent-color);
-      color: var(--text-color);
-      font-size: 16px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s;
-      margin-top: 10px;
+      margin-top: 15px;
+      font-weight: 500;
     }
-    #admin-container button:hover { background: var(--hover-color); }
+    .modal select {
+      width: 80%;
+      padding: 8px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+    }
   </style>
 </head>
 <body>
-  <!-- User Login -->
-  <div id="login-container">
-    <h2>User Login</h2>
-    <form id="login-form">
-      <input type="text" id="username" placeholder="Username" required>
-      <input type="text" id="phone" placeholder="Phone Number" required>
-      <button type="submit">Login</button>
-    </form>
+
+  <!-- Top Tabs -->
+  <div class="nav-tabs">
+    <button>Overview</button>
+    <button class="active">Spot</button>
+    <button>Funding</button>
+    <button>Futures</button>
   </div>
-  
-  <!-- Game Container -->
-  <div id="game-container">
-    <div class="container">
-      <div class="account-header">
-        <div class="account-info">
-          <span class="account-icon">👤</span>
-          <div class="balance-container">
-            <span class="balance-text">Balance: UGX <span id="balance">0.00</span></span>
-          </div>
-        </div>
-        <div class="account-actions">
-          <button id="deposit-btn">Deposit</button>
-          <button id="withdraw-btn">Withdraw</button>
-        </div>
-      </div>
-      <div class="round-timer">
-        Next round starts in: <span id="countdown-timer">10</span> seconds
-      </div>
-      <div class="game-area">
-        <div class="multiplier-display" id="multiplier">1.00x</div>
-        <div class="airplane" id="airplane">⚽</div>
-      </div>
-      <div class="winnings">Potential Winnings: UGX <span id="winnings">0.00</span></div>
-      <div class="controls">
-        <div class="stakes">
-          <div class="bet-section">
-            <label for="bet-amount-1">Stake : Bet UGX</label>
-            <input type="number" id="bet-amount-1" min="1" value="100">
-            <label for="auto-cashout-1">Auto Cash Out at</label>
-            <input type="number" id="auto-cashout-1" step="0.01" min="1.01" value="1.50">
-            <div class="toggle-container">
-              <label for="toggle-autocashout-1">Auto Cash Out</label>
-              <input type="checkbox" id="toggle-autocashout-1">
-            </div>
-            <div class="bet-buttons">
-              <button class="place-bet-btn" data-bet="1">Place Bet</button>
-              <button class="cashout-btn" id="cashout-btn-1" disabled>Cash Out</button>
-            </div>
-          </div>
-          <div class="bet-section">
-            <label for="bet-amount-2">Stake : Bet UGX</label>
-            <input type="number" id="bet-amount-2" min="1" value="100">
-            <label for="auto-cashout-2">Auto Cash Out at</label>
-            <input type="number" id="auto-cashout-2" step="0.01" min="1.01" value="2.00">
-            <div class="toggle-container">
-              <label for="toggle-autocashout-2">Auto Cash Out</label>
-              <input type="checkbox" id="toggle-autocashout-2">
-            </div>
-            <div class="bet-buttons">
-              <button class="place-bet-btn" data-bet="2">Place Bet</button>
-              <button class="cashout-btn" id="cashout-btn-2" disabled>Cash Out</button>
-            </div>
-          </div>
-        </div>
-        <button id="start-btn">Start Round Now</button>
-        <button id="cashout-all-btn" disabled>Cash Out All</button>
-      </div>
-      <div class="next-crash">Next Crash: <span id="next-crash">?</span>x</div>
-      <div class="result" id="result"></div>
-    </div>
-    <div class="virtual-players">
-      <h3>Live Bets</h3>
-      <ul id="players-list"></ul>
-    </div>
-    <div class="recent-multipliers">
-      <h3>Recent Multipliers</h3>
-      <ul id="multipliers-list"></ul>
-      <button id="save-pdf-btn">Save Multipliers as PDF</button>
-    </div>
-    <div id="loading-spinner">
-      <div class="spinner"></div>
+
+  <!-- Value Section -->
+  <div class="value-section">
+    <h2>Est. Total Value</h2>
+    <h1 id="totalValue"></h1>
+    <p>Today's PNL <span class="text-red convert-ugx" data-ugx="-34.40">-USh34.40</span>(-4.36%)</p>
+    <!-- Currency Dropdown -->
+    <div class="currency-select">
+      <select id="currencySelect">
+        <option value="UGX" selected>UGX</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+      </select>
     </div>
   </div>
-  
-  <!-- Admin Panel -->
-  <div id="admin-container">
-    <h2>Admin Panel</h2>
-    <!-- Admin Login -->
-    <div id="admin-login-container">
-      <form id="admin-login-form">
-        <input type="password" id="admin-password" placeholder="Enter Admin Password" required>
-        <button type="submit">Login as Admin</button>
-      </form>
-    </div>
-    <!-- Admin Settings (hidden until login) -->
-    <div id="admin-settings" style="display: none;">
-      <label for="new-deposit-password">New Deposit Password:</label>
-      <input type="text" id="new-deposit-password" placeholder="e.g. newpass123">
-      <label for="max-deposit-amount">Max Deposit Amount (UGX):</label>
-      <input type="number" id="max-deposit-amount" value="100000">
-      <button id="save-admin-settings">Save Settings</button>
-    </div>
+
+  <!-- Action Buttons -->
+  <div class="actions">
+    <button id="addFundsBtn" onclick="handleAddFunds()">Add Funds</button>
+    <button>Send</button>
+    <button>Transfer</button>
   </div>
-  
+
+  <!-- Crypto / Account Tabs -->
+  <div class="crypto-account-tabs">
+    <button class="active">Crypto</button>
+    <button>Account</button>
+  </div>
+
+  <!-- Crypto List -->
+  <div class="crypto-section">
+    <ul class="crypto-list">
+      <!-- TRUMP Item -->
+      <li data-crypto="TRUMP">
+        <div class="crypto-details">
+          <div class="crypto-name">
+            <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/26973.png" alt="TRUMP">
+            <span>TRUMP</span>
+          </div>
+          <div class="crypto-ticker">OFFICIAL TRUMP</div>
+          <p>Today's PNL <span class="amount convert-ugx text-red" data-ugx="-36.75">-USh36.75</span>(-4.36%)</p>
+          <p>Average cost <span class="amount convert-ugx" data-ugx="55643.03">USh55,643.03</span></p>
+          <p>Market Price <span class="amount convert-ugx market-price" data-ugx="45168.58">USh45,168.58</span></p>
+        </div>
+        <div class="crypto-value">
+          <p class="coin-quantity" data-coin="0.01669361">0.01669361</p>
+          <p class="amount convert-ugx" data-ugx="752.80">USh752.80</p>
+        </div>
+      </li>
+      <!-- XRP Item -->
+      <li data-crypto="XRP">
+        <div class="crypto-details">
+          <div class="crypto-name">
+            <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/52.png" alt="XRP">
+            <span>XRP</span>
+          </div>
+          <div class="crypto-ticker">XRP</div>
+          <p>Today's PNL <span class="amount convert-ugx text-green" data-ugx="0.00">+USh0.00</span>(-1.69%)</p>
+          <p>Average cost <span class="amount convert-ugx" data-ugx="1984.99">USh1,984.99</span></p>
+          <p>Market Price <span class="amount convert-ugx market-price" data-ugx="8623.93">USh8,623.93</span></p>
+        </div>
+        <div class="crypto-value">
+          <p class="coin-quantity" data-coin="0.00018207">0.00018207</p>
+          <p class="amount convert-ugx" data-ugx="1.57">USh1.57</p>
+        </div>
+      </li>
+      <!-- BNB (GPS) Item -->
+      <li data-crypto="BNB">
+        <div class="crypto-details">
+          <div class="crypto-name">
+            <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1899.png" alt="GoPlus Security (GPS) Logo">
+            <span>GPS</span>
+          </div>
+          <div class="crypto-ticker">GPS</div>
+          <p>Today's PNL <span class="amount convert-ugx text-green" data-ugx="0.00">+USh0.00</span>(-10.54%)</p>
+          <p>Average cost <span class="amount convert-ugx" data-ugx="299.78">USh299.78</span></p>
+          <p>Market Price <span class="amount convert-ugx market-price" data-ugx="299.78">USh299.67</span></p>
+        </div>
+        <div class="crypto-value">
+          <p class="coin-quantity" data-coin="0.00000034">0.00000034</p>
+          <p class="amount convert-ugx" data-ugx="0.70836383">USh0.70836383</p>
+        </div>
+      </li>
+      <!-- USDT Item -->
+      <li data-crypto="USDT">
+        <div class="crypto-details">
+          <div class="crypto-name">
+            <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png" alt="USDT">
+            <span>USDT</span>
+          </div>
+          <div class="crypto-ticker">TetherUS</div>
+          <p>Today's PNL <span class="amount convert-ugx text-green" data-ugx="0.00">+USh0.00</span>(0.00%)</p>
+          <p>Market Price <span class="amount convert-ugx market-price" data-ugx="3675.23">USh3,675.23</span></p>
+        </div>
+        <div class="crypto-value">
+          <p class="coin-quantity" data-coin="0.00000074">0.00000074</p>
+          <p class="amount convert-ugx" data-ugx="0.00271967">USh0.00271967</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <a href="#" class="active">
+      <img src="https://img.icons8.com/material-outlined/24/FFFFFF/home--v2.png" alt="Home"/>
+      Home
+    </a>
+    <a href="#">
+      <img src="https://img.icons8.com/material-outlined/24/FFFFFF/line-chart--v1.png" alt="Markets"/>
+      Markets
+    </a>
+    <a href="#">
+      <img src="https://img.icons8.com/material-outlined/24/FFFFFF/trade--v1.png" alt="Trade"/>
+      Trade
+    </a>
+    <a href="#">
+      <img src="https://img.icons8.com/material-outlined/24/FFFFFF/futures.png" alt="Futures"/>
+      Futures
+    </a>
+    <a href="#">
+      <img src="https://img.icons8.com/material-outlined/24/FFFFFF/pie-chart--v1.png" alt="Assets"/>
+      Assets
+    </a>
+  </div>
+
+  <!-- Overlays & Modals -->
+  <div id="overlay"></div>
+  <div id="passwordModal" class="modal">
+    <h2>Enter Password</h2>
+    <input type="password" id="passwordInput" placeholder="Password" />
+    <br />
+    <button onclick="checkPassword()">Submit</button>
+  </div>
+
+  <div id="overlay-deposit"></div>
+  <div id="depositModal" class="modal">
+    <h2>Deposit Funds</h2>
+    <label for="cryptoSelectDeposit">Select Crypto:</label>
+    <select id="cryptoSelectDeposit">
+      <option value="TRUMP">TRUMP</option>
+      <option value="XRP">XRP</option>
+      <option value="BNB">GPS</option>
+      <option value="USDT">USDT</option>
+    </select>
+    <br />
+    <input type="number" id="depositAmountInput" placeholder="Enter amount in UGX" />
+    <br />
+    <button onclick="confirmDeposit()">Deposit</button>
+  </div>
+
   <script>
-    // ----- User Login & Persistence (from previous example) -----
-    let currentUser = null;
-    function saveUser() {
-      if (currentUser && currentUser.phone) {
-        localStorage.setItem("user_" + currentUser.phone, JSON.stringify(currentUser));
-      }
+    // Mapping from our crypto codes to CoinGecko IDs:
+    const coinMapping = {
+      "TRUMP": "bitcoin",
+      "XRP": "ripple",
+      "BNB": "binancecoin",
+      "USDT": "tether"
+    };
+
+    // Enable/Disable Add Funds Button:
+    let addFundsEnabled = true;
+    document.getElementById('addFundsBtn').disabled = !addFundsEnabled;
+
+    // Base UGX Value (computed from crypto holdings)
+    let baseValueUGX = 0;
+
+    // Default exchange rates (fallback values)
+    let exchangeRates = {
+      UGX: 1,
+      USD: 0.00027,
+      EUR: 0.00024
+    };
+
+    // Currency symbols mapping
+    const currencySymbols = {
+      UGX: "USh",
+      USD: "$",
+      EUR: "€"
+    };
+
+    const totalValueEl = document.getElementById('totalValue');
+    const currencySelect = document.getElementById('currencySelect');
+
+    // Update the total value display in the chosen currency
+    function updateDisplayedValue() {
+      const selectedCurrency = currencySelect.value;
+      const rate = exchangeRates[selectedCurrency] || 1;
+      const symbol = currencySymbols[selectedCurrency] || '';
+      totalValueEl.innerHTML = `${symbol}${(baseValueUGX * rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
-    function loadUser(phone) {
-      let data = localStorage.getItem("user_" + phone);
-      return data ? JSON.parse(data) : null;
+
+    // Update non-price elements for currency conversion
+    function updateConvertedValues() {
+      const selectedCurrency = currencySelect.value;
+      const rate = exchangeRates[selectedCurrency] || 1;
+      const symbol = currencySymbols[selectedCurrency] || '';
+      document.querySelectorAll('.convert-ugx').forEach(el => {
+        // Skip market-price elements; they are updated separately
+        if (el.classList.contains('market-price')) return;
+        const baseVal = parseFloat(el.getAttribute('data-ugx'));
+        if (!isNaN(baseVal)) {
+          el.innerText = `${symbol}${(baseVal * rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+      });
     }
-    document.getElementById("login-form").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const username = document.getElementById("username").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      if (username === "" || phone === "") {
-        alert("Please enter a valid username and phone number.");
-        return;
-      }
-      let user = loadUser(phone);
-      if (!user) {
-        user = { username, phone, balance: 0 };
-        localStorage.setItem("user_" + phone, JSON.stringify(user));
-      }
-      currentUser = user;
-      balance = currentUser.balance;
-      balanceDisplay.textContent = formatCurrency(balance);
-      document.getElementById("login-container").style.display = "none";
-      document.getElementById("game-container").style.display = "block";
+
+    currencySelect.addEventListener('change', () => {
+      updateDisplayedValue();
+      updateConvertedValues();
+      // Also recalc total portfolio value conversion on dropdown change
+      recalcTotalValue();
     });
-    
-    // ----- Admin Panel Variables & Logic -----
-    // Global variables for deposit settings
-    let depositPassword = "Dan123";  // default deposit password
-    let maxDepositAmount = 10000;   // default maximum deposit allowed
-    // Default admin password for accessing the admin panel
-    const adminAccessPassword = "admin123";
-    
-    // Handle admin login form submission
-    document.getElementById("admin-login-form").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const enteredAdminPassword = document.getElementById("admin-password").value.trim();
-      if (enteredAdminPassword === adminAccessPassword) {
-        document.getElementById("admin-login-container").style.display = "none";
-        document.getElementById("admin-settings").style.display = "block";
+
+    // Initialize display on load
+    updateDisplayedValue();
+    updateConvertedValues();
+
+    // --- Fetch exchange rates from a demo API ---
+    async function fetchConversionRates() {
+      const url = 'https://open.er-api.com/v6/latest/UGX';
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data && data.rates) {
+          exchangeRates.USD = data.rates.USD;
+          exchangeRates.EUR = data.rates.EUR;
+          updateDisplayedValue();
+          updateConvertedValues();
+        }
+      } catch (error) {
+        console.error("Error fetching conversion rates:", error);
+      }
+    }
+    fetchConversionRates();
+    setInterval(fetchConversionRates, 10 * 60 * 1000);
+
+    // --- Add Funds Flow ---
+    function handleAddFunds() {
+      if (!addFundsEnabled) return;
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('passwordModal').style.display = 'block';
+    }
+
+    function checkPassword() {
+      const password = document.getElementById('passwordInput').value;
+      if (password === '12345') {
+        closePasswordModal();
+        openDepositModal();
       } else {
-        alert("Incorrect admin password!");
+        alert('Incorrect password!');
       }
-    });
-    
-    // Handle admin settings save
-    document.getElementById("save-admin-settings").addEventListener("click", function() {
-      const newDepositPass = document.getElementById("new-deposit-password").value.trim();
-      const newMaxDeposit = parseFloat(document.getElementById("max-deposit-amount").value);
-      if (newDepositPass === "" || isNaN(newMaxDeposit) || newMaxDeposit <= 0) {
-        alert("Please enter a valid deposit password and maximum deposit amount.");
-        return;
-      }
-      depositPassword = newDepositPass;
-      maxDepositAmount = newMaxDeposit;
-      alert("Admin settings updated successfully!");
-      // Clear the input fields
-      document.getElementById("new-deposit-password").value = "";
-    });
-    
-    // ----- Game & Simulation Code -----
-    let balance = 0; // will be overwritten upon user login
-    let multiplier = 1.0;
-    let simulationInterval;
-    let roundCountdownInterval;
-    let roundCountdownTime = 10;
-    let crashed = false;
-    let bets = [];
-    let nextCrashMultiplier = generateCrashMultiplier();
-    let verticalDirection = 1;
-    let verticalSpeed = 0.5;
-    let ballDirectionX = 1;
-    let horizontalSpeed = 0.3;
-    let recentMultipliers = [];
-    
-    const balanceDisplay = document.getElementById('balance');
-    const multiplierDisplay = document.getElementById('multiplier');
-    const airplane = document.getElementById('airplane');
-    const winningsDisplay = document.getElementById('winnings');
-    const startBtn = document.getElementById('start-btn');
-    const cashoutAllBtn = document.getElementById('cashout-all-btn');
-    const depositBtn = document.getElementById('deposit-btn');
-    const withdrawBtn = document.getElementById('withdraw-btn');
-    const nextCrashDisplay = document.getElementById('next-crash');
-    const resultDisplay = document.getElementById('result');
-    const playersList = document.getElementById('players-list');
-    const countdownTimerDisplay = document.getElementById('countdown-timer');
-    const loadingSpinner = document.getElementById('loading-spinner');
-    const multipliersList = document.getElementById('multipliers-list');
-    const savePdfBtn = document.getElementById('save-pdf-btn');
-    
-    function formatCurrency(amount) {
-      return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
-    
-    function showLoadingSpinner() { loadingSpinner.style.display = 'block'; }
-    function hideLoadingSpinner() { loadingSpinner.style.display = 'none'; }
-    
-    function generateCrashMultiplier() {
-      const maxMultiplier = 500;
-      const u = Math.random() * (1 - 1 / maxMultiplier);
-      const m = 1 / (1 - u);
-      return parseFloat(m.toFixed(2));
+
+    function closePasswordModal() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('passwordModal').style.display = 'none';
+      document.getElementById('passwordInput').value = '';
     }
-    
-    function updateWinnings() {
-      if (bets.length > 0) {
-        let totalPotential = 0;
-        bets.forEach(bet => { 
-          if (!bet.hasCashedOut) { totalPotential += bet.amount * multiplier; } 
-        });
-        winningsDisplay.textContent = formatCurrency(totalPotential);
+
+    function openDepositModal() {
+      document.getElementById('overlay-deposit').style.display = 'block';
+      document.getElementById('depositModal').style.display = 'block';
+    }
+
+    function confirmDeposit() {
+      const amount = parseFloat(document.getElementById('depositAmountInput').value);
+      if (amount && amount > 0) {
+        const selectedCrypto = document.getElementById('cryptoSelectDeposit').value;
+        const cryptoItem = document.querySelector(`.crypto-list li[data-crypto="${selectedCrypto}"]`);
+        if (cryptoItem) {
+          const coinQuantityEl = cryptoItem.querySelector('.coin-quantity');
+          const marketPriceEl = cryptoItem.querySelector('.market-price');
+          const cryptoValueEl = cryptoItem.querySelector('.crypto-value .amount');
+          if (coinQuantityEl && marketPriceEl && cryptoValueEl) {
+            const marketPrice = parseFloat(marketPriceEl.getAttribute('data-ugx'));
+            let currentCoinQty = parseFloat(coinQuantityEl.getAttribute('data-coin'));
+            const additionalCoins = amount / marketPrice;
+            currentCoinQty += additionalCoins;
+            coinQuantityEl.setAttribute('data-coin', currentCoinQty.toFixed(8));
+            coinQuantityEl.innerText = currentCoinQty.toFixed(8);
+            const newCryptoValue = currentCoinQty * marketPrice;
+            cryptoValueEl.setAttribute('data-ugx', newCryptoValue.toFixed(2));
+            const selectedCurrency = currencySelect.value;
+            const rate = exchangeRates[selectedCurrency] || 1;
+            const symbol = currencySymbols[selectedCurrency] || '';
+            cryptoValueEl.innerText = `${symbol}${(newCryptoValue * rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          }
+        }
+        alert(`You have deposited USh ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} into ${selectedCrypto}!`);
+        closeDepositModal();
+        recalcTotalValue();
       } else {
-        winningsDisplay.textContent = "0.00";
+        alert('Please enter a valid amount.');
       }
     }
-    
-    function updateMultipliersList() {
-      multipliersList.innerHTML = "";
-      for (let i = recentMultipliers.length - 1; i >= 0; i--) {
-        const li = document.createElement("li");
-        li.textContent = recentMultipliers[i].multiplier.toFixed(2);
-        li.style.color = recentMultipliers[i].status === 'win' ? 'green' : (recentMultipliers[i].status === 'loss' ? 'red' : 'white');
-        multipliersList.appendChild(li);
-      }
+
+    function closeDepositModal() {
+      document.getElementById('overlay-deposit').style.display = 'none';
+      document.getElementById('depositModal').style.display = 'none';
+      document.getElementById('depositAmountInput').value = '';
     }
-    
-    function updateNextCrashDisplay() {
-      nextCrashDisplay.textContent = nextCrashMultiplier.toFixed(2);
+
+    // --- Recalculate total portfolio value ---
+    function recalcTotalValue() {
+      let total = 0;
+      document.querySelectorAll('.crypto-list li').forEach(li => {
+        const coinQuantityEl = li.querySelector('.coin-quantity');
+        const marketPriceEl = li.querySelector('.market-price');
+        const cryptoValueEl = li.querySelector('.crypto-value .amount');
+        if (coinQuantityEl && marketPriceEl && cryptoValueEl) {
+          const coinQty = parseFloat(coinQuantityEl.getAttribute('data-coin'));
+          const currentPrice = parseFloat(marketPriceEl.getAttribute('data-ugx'));
+          const holdingValue = coinQty * currentPrice;
+          total += holdingValue;
+          cryptoValueEl.setAttribute('data-ugx', holdingValue.toFixed(2));
+          const selectedCurrency = currencySelect.value;
+          const rate = exchangeRates[selectedCurrency] || 1;
+          const symbol = currencySymbols[selectedCurrency] || '';
+          cryptoValueEl.innerText = `${symbol}${(holdingValue * rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+      });
+      baseValueUGX = total;
+      updateDisplayedValue();
     }
-    
-    function removeNextCrashDisplay() {
-      nextCrashDisplay.parentElement.classList.add('hidden');
-    }
-    
-    function bringBackNextCrashDisplay() {
-      nextCrashDisplay.parentElement.classList.remove('hidden');
-    }
-    
-    function startRoundProcess() {
-      crashed = false;
-      multiplier = 1.0;
-      resultDisplay.textContent = '';
-      resultDisplay.classList.remove("win", "loss");
-      multiplierDisplay.textContent = `${multiplier.toFixed(2)}x`;
-      winningsDisplay.textContent = bets.length > 0 ? formatCurrency(bets.reduce((total, bet) => total + (bet.amount * multiplier), 0)) : "0.00";
+
+    // --- Realtime Market Price Update using CoinGecko API ---
+    async function updateMarketPrices() {
+      const ids = Object.values(coinMapping).join(',');
+      const apiUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=ugx`;
       
-      airplane.classList.remove("crashed");
-      multiplierDisplay.classList.remove("stopped");
-      airplane.style.bottom = `10%`;
-      airplane.style.left = `50%`;
-      verticalDirection = 1;
-      ballDirectionX = 1;
-      startBtn.disabled = true;
-      document.querySelectorAll('.place-bet-btn').forEach(btn => btn.disabled = true);
-      cashoutAllBtn.disabled = bets.length === 0;
-      clearInterval(roundCountdownInterval);
-      countdownTimerDisplay.textContent = "0";
-      
-      updateNextCrashDisplay();
-      
-      simulationInterval = setInterval(() => {
-        multiplier = multiplier < 2 ? multiplier * (1 + Math.random() * 0.015) : multiplier * (1 + Math.random() * 0.045);
-        multiplierDisplay.textContent = `${multiplier.toFixed(2)}x`;
-        updateWinnings();
-        
-        const container = document.querySelector('.game-area');
-        const containerHeight = container.offsetHeight;
-        const airplaneHeight = airplane.offsetHeight;
-        const maxBottomPercent = ((containerHeight - airplaneHeight) / containerHeight) * 100;
-        const minBottomPercent = 10;
-        let currentBottom = parseFloat(airplane.style.bottom);
-        let newBottom = currentBottom + verticalSpeed * verticalDirection;
-        if (newBottom >= maxBottomPercent) { newBottom = maxBottomPercent; verticalDirection = -1; }
-        else if (newBottom <= minBottomPercent) { newBottom = minBottomPercent; verticalDirection = 1; }
-        airplane.style.bottom = `${newBottom}%`;
-        
-        let currentLeft = parseFloat(airplane.style.left);
-        if (isNaN(currentLeft)) currentLeft = 50;
-        const minLeftPercent = 20;
-        const maxLeftPercent = 80;
-        let newLeft = currentLeft + horizontalSpeed * ballDirectionX;
-        if (newLeft >= maxLeftPercent) { newLeft = maxLeftPercent; ballDirectionX = -1; }
-        else if (newLeft <= minLeftPercent) { newLeft = minLeftPercent; ballDirectionX = 1; }
-        airplane.style.left = `${newLeft}%`;
-        
-        bets.forEach(bet => {
-          if (!bet.hasCashedOut && bet.autoEnabled && multiplier >= bet.autoCashOut) {
-            bet.lockedMultiplier = multiplier;
-            bet.hasCashedOut = true;
-            const winnings = bet.amount * multiplier;
-            balance += winnings;
-            balanceDisplay.textContent = formatCurrency(balance);
-            resultDisplay.innerHTML += `<br><span class="win">Bet ${bet.id}: Auto cashed out at ${multiplier.toFixed(2)}x! Won UGX ${formatCurrency(winnings)}.</span>`;
-            document.getElementById('cashout-btn-' + bet.id).disabled = true;
-            currentUser.balance = balance;
-            saveUser();
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        document.querySelectorAll('.crypto-list li').forEach(li => {
+          const cryptoCode = li.getAttribute('data-crypto');
+          const coinId = coinMapping[cryptoCode];
+          const priceData = data[coinId];
+          if (priceData && priceData.ugx) {
+            const newPrice = parseFloat(priceData.ugx);
+            const marketPriceEl = li.querySelector('.market-price');
+            if (marketPriceEl) {
+              marketPriceEl.setAttribute('data-ugx', newPrice.toFixed(2));
+              const selectedCurrency = currencySelect.value;
+              const rate = exchangeRates[selectedCurrency] || 1;
+              const symbol = currencySymbols[selectedCurrency] || '';
+              marketPriceEl.innerText = `${symbol}${(newPrice * rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
           }
         });
-        
-        if (multiplier >= nextCrashMultiplier) { 
-          crash(); 
-        }
-      }, 100);
+        recalcTotalValue();
+        updateConvertedValues();
+      } catch (error) {
+        console.error("Error fetching market prices:", error);
+      }
     }
-    
-    function crash() {
-      crashed = true;
-      clearInterval(simulationInterval);
-      bets.forEach(bet => {
-        if (!bet.hasCashedOut) {
-          resultDisplay.innerHTML += `<br><span class="loss">Bet ${bet.id}: Crashed at ${multiplier.toFixed(2)}x! Lost UGX ${bet.amount.toFixed(2)}.</span>`;
-        }
-      });
-      recentMultipliers.push({ multiplier: parseFloat(multiplier.toFixed(2)), status: bets.some(b => b.hasCashedOut) ? 'win' : 'loss' });
-      if (recentMultipliers.length > 100) { recentMultipliers.shift(); }
-      updateMultipliersList();
-      startBtn.disabled = false;
-      cashoutAllBtn.disabled = true;
-      bets = [];
-      document.querySelectorAll('.place-bet-btn').forEach(btn => btn.disabled = false);
-      document.querySelectorAll('.cashout-btn').forEach(btn => btn.disabled = true);
-      
-      nextCrashMultiplier = generateCrashMultiplier();
-      updateNextCrashDisplay();
-      
-      multiplierDisplay.classList.add("stopped");
-      airplane.classList.add("crashed");
-      setTimeout(startCountdown, 3000);
-    }
-    
-    function startCountdown() {
-      roundCountdownTime = 7;
-      countdownTimerDisplay.textContent = roundCountdownTime;
-      roundCountdownInterval = setInterval(() => {
-        roundCountdownTime--;
-        countdownTimerDisplay.textContent = roundCountdownTime;
-        if (roundCountdownTime <= 0) {
-          clearInterval(roundCountdownInterval);
-          startRoundProcess();
-        }
-      }, 1000);
-    }
-    
-    document.querySelectorAll('.place-bet-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const betId = this.dataset.bet;
-        const betInput = document.getElementById(`bet-amount-${betId}`);
-        const autoInput = document.getElementById(`auto-cashout-${betId}`);
-        const toggleInput = document.getElementById(`toggle-autocashout-${betId}`);
-        const betAmount = parseFloat(betInput.value);
-        const autoCashOutValue = parseFloat(autoInput.value);
-        const autoEnabled = toggleInput.checked;
-        if (isNaN(betAmount) || betAmount <= 0) { 
-          alert("Invalid bet amount!"); 
-          return; 
-        }
-        if (betAmount > balance) { 
-          alert("Insufficient balance!"); 
-          return; 
-        }
-        if (isNaN(autoCashOutValue) || autoCashOutValue <= 1) { 
-          alert("Invalid auto cash out value! It must be greater than 1.00"); 
-          return; 
-        }
-        balance -= betAmount;
-        balanceDisplay.textContent = formatCurrency(balance);
-        currentUser.balance = balance;
-        saveUser();
-        const bet = { id: betId, amount: betAmount, autoCashOut: autoCashOutValue, autoEnabled: autoEnabled, hasCashedOut: false, lockedMultiplier: 0 };
-        bets.push(bet);
-        this.disabled = true;
-        document.getElementById('cashout-btn-' + betId).disabled = false;
-        cashoutAllBtn.disabled = false;
-      });
-    });
-    
-    document.getElementById('cashout-btn-1').addEventListener('click', () => {
-      let bet = bets.find(b => b.id === "1");
-      if (bet && !bet.hasCashedOut) {
-        bet.lockedMultiplier = multiplier;
-        bet.hasCashedOut = true;
-        const winnings = bet.amount * multiplier;
-        balance += winnings;
-        balanceDisplay.textContent = formatCurrency(balance);
-        resultDisplay.innerHTML += `<br><span class="win">Bet ${bet.id}: Manually cashed out at ${multiplier.toFixed(2)}x! Won UGX ${formatCurrency(winnings)}.</span>`;
-        document.getElementById('cashout-btn-1').disabled = true;
-        currentUser.balance = balance;
-        saveUser();
-      }
-    });
-    
-    document.getElementById('cashout-btn-2').addEventListener('click', () => {
-      let bet = bets.find(b => b.id === "2");
-      if (bet && !bet.hasCashedOut) {
-        bet.lockedMultiplier = multiplier;
-        bet.hasCashedOut = true;
-        const winnings = bet.amount * multiplier;
-        balance += winnings;
-        balanceDisplay.textContent = formatCurrency(balance);
-        resultDisplay.innerHTML += `<br><span class="win">Bet ${bet.id}: Manually cashed out at ${multiplier.toFixed(2)}x! Won UGX ${formatCurrency(winnings)}.</span>`;
-        document.getElementById('cashout-btn-2').disabled = true;
-        currentUser.balance = balance;
-        saveUser();
-      }
-    });
-    
-    // Updated deposit listener using the depositPassword and maxDepositAmount variables.
-    depositBtn.addEventListener('click', () => {
-      const enteredDepPass = prompt("Enter deposit password:");
-      if (enteredDepPass !== depositPassword) {
-        alert("Incorrect deposit password! Deposit canceled.");
-        return;
-      }
-      const depositAmount = prompt("Enter deposit amount (UGX):");
-      const amount = parseFloat(depositAmount);
-      if (isNaN(amount) || amount <= 0) {
-        alert("Invalid deposit amount!");
-        return;
-      }
-      if (amount > maxDepositAmount) {
-        alert("Deposit amount exceeds the maximum allowed of UGX " + formatCurrency(maxDepositAmount));
-        return;
-      }
-      balance += amount;
-      balanceDisplay.textContent = formatCurrency(balance);
-      currentUser.balance = balance;
-      saveUser();
-      alert(`Deposit of UGX ${amount.toFixed(2)} successful!`);
-    });
-    
-    withdrawBtn.addEventListener('click', () => {
-      const withdrawAmount = prompt("Enter the withdrawal amount (UGX):");
-      const amount = parseFloat(withdrawAmount);
-      if (isNaN(amount) || amount <= 0) {
-        alert("Invalid withdrawal amount!");
-        return;
-      }
-      if (amount < 1000) {
-        alert("The minimum withdrawal amount is UGX 1,000!");
-        return;
-      }
-      if (amount > balance) {
-        alert("Withdrawal amount exceeds your balance!");
-        return;
-      }
-      balance -= amount;
-      balanceDisplay.textContent = formatCurrency(balance);
-      currentUser.balance = balance;
-      saveUser();
-      alert("Withdrawal of UGX " + formatCurrency(amount) + " has been processed successfully!");
-    });
-    
-    savePdfBtn.addEventListener('click', () => {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      let y = 10;
-      doc.text("Recent Multipliers", 10, y);
-      y += 10;
-      recentMultipliers.slice().reverse().forEach(item => {
-        doc.text(`Multiplier: ${item.multiplier.toFixed(2)} - ${item.status.toUpperCase()}`, 10, y);
-        y += 10;
-      });
-      doc.save("recent_multipliers.pdf");
-    });
-    
-    // Start the first countdown once logged in.
-    startCountdown();
-    
+
+    setInterval(updateMarketPrices, 10000);
+    updateMarketPrices();
+    // --- End of Realtime API Integration ---
+
   </script>
 </body>
 </html>
